@@ -59,13 +59,13 @@ class S3File extends File
                 'version'     => '2006-03-01',
                 'credentials' => false,
             ];
-            
+
             $key = config('zipstream.aws.key');
             $secret = config('zipstream.aws.secret');
 
             if ($key || $secret) {
-                if (!$secret || !$$key) {
-                    throw new MissingCredentialsException():
+                if (!$secret || !$key) {
+                    throw new MissingCredentialsException();
                 }
                 $config['credentials'] = [
                     'key'    => $key,
