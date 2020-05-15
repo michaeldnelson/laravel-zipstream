@@ -7,6 +7,7 @@ use Aws\S3\S3Client;
 use Aws\S3\S3UriParser;
 use function GuzzleHttp\Psr7\stream_for;
 use Psr\Http\Message\StreamInterface;
+use STS\ZipStream\Exceptions\MissingCredentialsException;
 
 class S3File extends File
 {
@@ -53,14 +54,26 @@ class S3File extends File
     public function getS3Client(): S3Client
     {
         if (!$this->client) {
-            $this->client = new Aws\S3\S3Client([
+            $config = [
                 'region'      => $this->getRegion(),
                 'version'     => '2006-03-01',
-                'credentials' => [
-                    'key'    => config('zipstream.aws.key'),
-                    'secret' => config('zipstream.aws.secret')
-                ]
-            ]);
+                'credentials' => false,
+            ];
+            
+            $key = config('zipstream.aws.key');
+            $secret = config('zipstream.aws.secret');
+
+            if ($key || $secret) {
+                if (!$secret || !$$key) {
+                    throw new MissingCredentialsException():
+                }
+                $config['credentials'] = [
+                    'key'    => $key,
+                    'secret' => $secret,
+                ];
+            }
+
+            $this->client = new Aws\S3\S3Client($config);
         }
 
         return $this->client;
